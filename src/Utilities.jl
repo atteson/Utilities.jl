@@ -1,5 +1,7 @@
 module Utilities
 
+using StatsBase
+
 export deaccumulate, multiaccumulate, momentmap
 
 deaccumulate( op, v, init ) = [op( init, v[1] ); op.( v[1:end-1], v[2:end] )]
