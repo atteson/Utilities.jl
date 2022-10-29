@@ -18,23 +18,28 @@ function multiaccumulate( f, v::AbstractVector{T}, new::AbstractVector{Bool}, in
     return out
 end
 
-function momentmap( x::AbstractVector{T}, y::AbstractVector{U}, buckets::Int; moments = 1  ) where {T,U}
-    r = (d -> d:d:1-d)(1/buckets)
+bound( x::AbstractVector{T}, buckets::Int ) where {T} = 
+    bounds = quantile.( (x,), (d -> d:d:1-d)(1/buckets) )
     
+
+label( x::AbstractVector{T}, bounds::Vector{T} ) where {T} = 
+    searchsortedfirst.( (bounds,), x );
+
+function momentmap( x::AbstractVector{T}, y::AbstractVector{U}, buckets::Int; moments = 1  ) where {T,U}
     good = .!isnan.(x) .& .!isnan.(y) .& .!isinf.(x) .& .!isinf.(y)
     x = x[good]
     y = y[good]
     n = length(x)
-    m = length(r) + 1
-    
-    bounds = quantile.( (x,), r )    
-#    labels = getfield.(searchsorted.( (bounds,), x ), :start )
 
-    counts = zeros( Int, m )
-    xmoments = zeros( T, m )
-    ymoments = zeros( U, m, moments )
+    bounds = bound( x, buckets )
+    
+    labels = label( x, bounds )
+
+    counts = zeros( Int, buckets )
+    xmoments = zeros( T, buckets )
+    ymoments = zeros( U, buckets, moments )
     for i = 1:n
-        l = searchsorted( bounds, x[i] ).start
+        l = labels[i]
         counts[l] += 1
         xmoments[l] += x[i]
         for j = 1:moments
