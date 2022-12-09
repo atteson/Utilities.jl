@@ -2,7 +2,7 @@ module Utilities
 
 using StatsBase
 
-export deaccumulate, multiaccumulate, momentmap
+export deaccumulate, multiaccumulate, momentmap, label, bound
 
 deaccumulate( op, v, init ) = [op( init, v[1] ); op.( v[1:end-1], v[2:end] )]
 deaccumulate( op, v, ::Nothing ) = op.( v[1:end-1], v[2:end] )
@@ -18,17 +18,23 @@ function multiaccumulate( f, v::AbstractVector{T}, new::AbstractVector{Bool}, in
     return out
 end
 
+multiaccumulate( f, v::AbstractVector{T}, new::AbstractVector{Bool} ) where {T} =
+    multiaccumulate( f, v, new, v )
+
+isgood(args...) = .&([.!isnan.(x) .& .!isinf.(x) for x in args]...)
+
+makegood(args...) = getindex.( args, (isgood(args...),) )
+
 bound( x::AbstractVector{T}, buckets::Int ) where {T} = 
-    bounds = quantile.( (x,), (d -> d:d:1-d)(1/buckets) )
-    
+    quantile.( (x,), (d -> d:d:1-d)(1/buckets) )
 
 label( x::AbstractVector{T}, bounds::Vector{T} ) where {T} = 
     searchsortedfirst.( (bounds,), x );
 
+label( x::AbstractVector{T}, buckets::Int ) where {T} = label( x, bound( x, buckets ) )
+
 function momentmap( x::AbstractVector{T}, y::AbstractVector{U}, buckets::Int; moments = 1  ) where {T,U}
-    good = .!isnan.(x) .& .!isnan.(y) .& .!isinf.(x) .& .!isinf.(y)
-    x = x[good]
-    y = y[good]
+    (x,y) = makegood(x,y)
     n = length(x)
 
     bounds = bound( x, buckets )
