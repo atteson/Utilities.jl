@@ -10,7 +10,7 @@ deaccumulate( op, v; init=nothing ) = deaccumulate( op, v, init )
 
 function multiaccumulate( f, v::AbstractVector{T}, new::AbstractVector{Bool}, init::AbstractVector{T} ) where {T}
     n = length(v)
-    out = zeros( T, n )
+    out = Vector( undef, n )
     out[1] = f( init[1], v[1] )
     for i = 2:n
         out[i] = f( new[i] ? init[i] : out[i-1], v[i] )
