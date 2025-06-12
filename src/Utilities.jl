@@ -30,4 +30,6 @@ function root( x, n::Int )
     return sign(x) * abs(x)^(1/n)
 end
 
+Base.:|>( i::T, v::Vector{T} ) where {T} = v[i]
+
 end # module
