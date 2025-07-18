@@ -1,8 +1,9 @@
 module Utilities
 
 using StatsBase
+using LinearAlgebra
 
-export deaccumulate, multiaccumulate, makegood, root
+export deaccumulate, multiaccumulate, makegood, root, ↑
 
 deaccumulate( op, v, init ) = [op( init, v[1] ); op.( v[1:end-1], v[2:end] )]
 deaccumulate( op, v, ::Nothing ) = op.( v[1:end-1], v[2:end] )
@@ -30,6 +31,14 @@ function root( x, n::Int )
     return sign(x) * abs(x)^(1/n)
 end
 
-Base.:|>( i::T, v::Vector{T} ) where {T} = v[i]
+Base.:|>( i::T, v::AbstractVector{U} ) where {T <: Integer, U} = v[i]
+Base.:|>( b::AbstractVector{Bool}, v::AbstractVector{U} ) where {U} = v[b]
+Base.:|>( i::T, v::Tuple ) where {T <: Integer} = v[i]
+Base.:|>( k::T, d::Dict{T,U} ) where {T, U} = d[k]
+
+↑( f::Function, v::Vector{Vector{T}} ) where {T} = f .↑ v
+↑( f::Function, v::Vector{T} ) where {T} = f.(v)
+
+LinearAlgebra.adjoint( v::Vector{T} ) where {T} = reshape( v, 1, : )
 
 end # module
