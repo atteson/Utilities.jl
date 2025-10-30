@@ -41,4 +41,22 @@ Base.:|>( k::T, d::Dict{T,U} ) where {T, U} = d[k]
 
 LinearAlgebra.adjoint( v::Vector{T} ) where {T} = reshape( v, 1, : )
 
+# redefine to return one past end of list if not found
+function Base.findfirst( b::AbstractVector{Bool} )
+    i = 1
+    while i <= length(b) && !b[i]
+        i += 1
+    end
+    return i
+end
+
+# redefine to return one past end of list if not found
+function Base.findlast( b::AbstractVector{Bool} )
+    i = 1
+    while i <= length(b) && !b[i]
+        i += 1
+    end
+    return i
+end
+
 end # module
