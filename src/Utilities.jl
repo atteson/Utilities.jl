@@ -39,6 +39,15 @@ Base.:|>( k::T, d::Dict{T,U} ) where {T, U} = d[k]
 ↑( f::Function, v::Vector{Vector{T}} ) where {T} = f .↑ v
 ↑( f::Function, v::Vector{T} ) where {T} = f.(v)
 
+struct UpFunction{F <: Function}
+    f::F
+end
+
+(f::UpFunction)( v::AbstractArray...; kwargs... ) = f.( v...; kwargs... )
+(f::UpFunction)( v...; kwargs... ) = f.f( v...; kwargs... )
+
+↑( f::Function ) = UpFunction(f)
+
 LinearAlgebra.adjoint( v::Vector{T} ) where {T} = reshape( v, 1, : )
 
 # redefine to return one past end of list if not found
